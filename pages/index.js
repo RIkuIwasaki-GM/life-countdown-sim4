@@ -14,33 +14,44 @@ import {
 export default function LifeCountdownDemo() {
   const [age, setAge] = useState(30);
   const [lifeExpectancy, setLifeExpectancy] = useState(85);
+  const [retireAge, setRetireAge] = useState(60);
   const [assets, setAssets] = useState(5000000);
   const [income, setIncome] = useState(300000);
   const [expenses, setExpenses] = useState(250000);
-  const [growthRate, setGrowthRate] = useState(3);
 
   const daysLeft = (lifeExpectancy - age) * 365;
 
-  const yearlyData = [];
+  let yearlyData = [];
   let currentAssets = assets;
+
   for (let year = age; year <= lifeExpectancy; year++) {
-    currentAssets += income * 12 - expenses * 12;
-    currentAssets *= 1 + growthRate / 100;
+    if (year <= retireAge) {
+      // 退職までは収入−支出で増える
+      currentAssets += (income - expenses) * 12;
+    } else {
+      // 退職後は寿命までに0になるよう取り崩す
+      const yearsRemaining = lifeExpectancy - year + 1;
+      const annualDrawdown = currentAssets / yearsRemaining;
+      currentAssets -= annualDrawdown;
+    }
     yearlyData.push({ year, assets: Math.max(currentAssets, 0) });
   }
 
-  const dailyBudget = (currentAssets / daysLeft).toFixed(0);
+  // 退職後の1日あたり使える金額（退職時の資産を余命日数で割る）
+  const retireAssets = yearlyData.find(d => d.year === retireAge)?.assets || currentAssets;
+  const retireDays = (lifeExpectancy - retireAge) * 365;
+  const dailyBudget = retireDays > 0 ? Math.floor(retireAssets / retireDays) : 0;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-500 via-pink-500 to-yellow-400 p-6 text-white">
       <h1 className="text-4xl font-extrabold mb-8 text-center drop-shadow-lg">
-        Life Countdown ✕ 資産シミュレーション
+        Life Countdown ✕ Die With Zero
       </h1>
 
       {/* 入力フォーム */}
-      <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-8 bg-white/20 p-4 rounded-xl shadow-lg">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8 bg-white/20 p-4 rounded-xl shadow-lg">
         <div>
-          <label className="block text-sm mb-1">年齢</label>
+          <label className="block text-sm mb-1">現在の年齢</label>
           <input
             className="p-2 rounded text-black w-full"
             type="number"
@@ -49,7 +60,16 @@ export default function LifeCountdownDemo() {
           />
         </div>
         <div>
-          <label className="block text-sm mb-1">想定寿命</label>
+          <label className="block text-sm mb-1">退職年齢</label>
+          <input
+            className="p-2 rounded text-black w-full"
+            type="number"
+            value={retireAge}
+            onChange={(e) => setRetireAge(Number(e.target.value))}
+          />
+        </div>
+        <div>
+          <label className="block text-sm mb-1">寿命 (想定)</label>
           <input
             className="p-2 rounded text-black w-full"
             type="number"
@@ -58,7 +78,7 @@ export default function LifeCountdownDemo() {
           />
         </div>
         <div>
-          <label className="block text-sm mb-1">現在資産 (円)</label>
+          <label className="block text-sm mb-1">現在の資産 (円)</label>
           <input
             className="p-2 rounded text-black w-full"
             type="number"
@@ -84,15 +104,6 @@ export default function LifeCountdownDemo() {
             onChange={(e) => setExpenses(Number(e.target.value))}
           />
         </div>
-        <div>
-          <label className="block text-sm mb-1">年利 (%)</label>
-          <input
-            className="p-2 rounded text-black w-full"
-            type="number"
-            value={growthRate}
-            onChange={(e) => setGrowthRate(Number(e.target.value))}
-          />
-        </div>
       </div>
 
       {/* カード表示 */}
@@ -112,15 +123,15 @@ export default function LifeCountdownDemo() {
         >
           <Banknote size={48} className="mb-2 text-green-400" />
           <p className="text-3xl font-bold">
-            ¥{Number(dailyBudget).toLocaleString()}
+            ¥{Number(dailyBudget).toLocaleString()} / 日
           </p>
-          <p className="text-lg">1日あたり</p>
+          <p className="text-lg">退職後に毎日使える金額</p>
         </motion.div>
       </div>
 
       {/* グラフ */}
       <div className="bg-white/30 p-6 rounded-2xl shadow-lg">
-        <h2 className="text-xl font-semibold mb-4">資産推移シミュレーション</h2>
+        <h2 className="text-xl font-semibold mb-4">資産推移（寿命で0円）</h2>
         <ResponsiveContainer width="100%" height={300}>
           <LineChart data={yearlyData}>
             <Line
