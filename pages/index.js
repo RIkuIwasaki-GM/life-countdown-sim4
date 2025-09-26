@@ -39,25 +39,81 @@ export default function LifeCountdownDemo() {
 
       {/* 入力フォーム */}
       <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-8 bg-white/20 p-4 rounded-xl shadow-lg">
-        <input className="p-2 rounded text-black" type="number" value={age} onChange={(e) => setAge(Number(e.target.value))} placeholder="年齢" />
-        <input className="p-2 rounded text-black" type="number" value={lifeExpectancy} onChange={(e) => setLifeExpectancy(Number(e.target.value))} placeholder="想定寿命" />
-        <input className="p-2 rounded text-black" type="number" value={assets} onChange={(e) => setAssets(Number(e.target.value))} placeholder="現在資産(円)" />
-        <input className="p-2 rounded text-black" type="number" value={income} onChange={(e) => setIncome(Number(e.target.value))} placeholder="月収(円)" />
-        <input className="p-2 rounded text-black" type="number" value={expenses} onChange={(e) => setExpenses(Number(e.target.value))} placeholder="月支出(円)" />
-        <input className="p-2 rounded text-black" type="number" value={growthRate} onChange={(e) => setGrowthRate(Number(e.target.value))} placeholder="年利(%)" />
+        <div>
+          <label className="block text-sm mb-1">年齢</label>
+          <input
+            className="p-2 rounded text-black w-full"
+            type="number"
+            value={age}
+            onChange={(e) => setAge(Number(e.target.value))}
+          />
+        </div>
+        <div>
+          <label className="block text-sm mb-1">想定寿命</label>
+          <input
+            className="p-2 rounded text-black w-full"
+            type="number"
+            value={lifeExpectancy}
+            onChange={(e) => setLifeExpectancy(Number(e.target.value))}
+          />
+        </div>
+        <div>
+          <label className="block text-sm mb-1">現在資産 (円)</label>
+          <input
+            className="p-2 rounded text-black w-full"
+            type="number"
+            value={assets}
+            onChange={(e) => setAssets(Number(e.target.value))}
+          />
+        </div>
+        <div>
+          <label className="block text-sm mb-1">月収 (円)</label>
+          <input
+            className="p-2 rounded text-black w-full"
+            type="number"
+            value={income}
+            onChange={(e) => setIncome(Number(e.target.value))}
+          />
+        </div>
+        <div>
+          <label className="block text-sm mb-1">月支出 (円)</label>
+          <input
+            className="p-2 rounded text-black w-full"
+            type="number"
+            value={expenses}
+            onChange={(e) => setExpenses(Number(e.target.value))}
+          />
+        </div>
+        <div>
+          <label className="block text-sm mb-1">年利 (%)</label>
+          <input
+            className="p-2 rounded text-black w-full"
+            type="number"
+            value={growthRate}
+            onChange={(e) => setGrowthRate(Number(e.target.value))}
+          />
+        </div>
       </div>
 
       {/* カード表示 */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-        <motion.div whileHover={{ scale: 1.05 }} className="bg-white/30 p-6 rounded-2xl shadow-lg flex flex-col items-center">
+        <motion.div
+          whileHover={{ scale: 1.05 }}
+          className="bg-white/30 p-6 rounded-2xl shadow-lg flex flex-col items-center"
+        >
           <Hourglass size={48} className="mb-2" />
           <p className="text-3xl font-bold">{daysLeft.toLocaleString()}</p>
           <p className="text-lg">日 残り</p>
         </motion.div>
 
-        <motion.div whileHover={{ scale: 1.05 }} className="bg-white/30 p-6 rounded-2xl shadow-lg flex flex-col items-center">
+        <motion.div
+          whileHover={{ scale: 1.05 }}
+          className="bg-white/30 p-6 rounded-2xl shadow-lg flex flex-col items-center"
+        >
           <Banknote size={48} className="mb-2 text-green-400" />
-          <p className="text-3xl font-bold">¥{Number(dailyBudget).toLocaleString()}</p>
+          <p className="text-3xl font-bold">
+            ¥{Number(dailyBudget).toLocaleString()}
+          </p>
           <p className="text-lg">1日あたり</p>
         </motion.div>
       </div>
@@ -67,11 +123,17 @@ export default function LifeCountdownDemo() {
         <h2 className="text-xl font-semibold mb-4">資産推移シミュレーション</h2>
         <ResponsiveContainer width="100%" height={300}>
           <LineChart data={yearlyData}>
-            <Line type="monotone" dataKey="assets" stroke="#4ade80" strokeWidth={3} dot={false} />
+            <Line
+              type="monotone"
+              dataKey="assets"
+              stroke="#4ade80"
+              strokeWidth={3}
+              dot={false}
+            />
             <CartesianGrid stroke="#ccc" strokeDasharray="5 5" />
             <XAxis dataKey="year" stroke="#fff" />
-            <YAxis stroke="#fff" />
-            <Tooltip />
+            <YAxis stroke="#fff" tickFormatter={(v) => v.toLocaleString()} />
+            <Tooltip formatter={(value) => value.toLocaleString()} />
           </LineChart>
         </ResponsiveContainer>
       </div>
