@@ -18,6 +18,7 @@ export default function LifeCountdownDemo() {
   const [assets, setAssets] = useState(5000000);
   const [income, setIncome] = useState(300000);
   const [expenses, setExpenses] = useState(250000);
+  const [growthRate, setGrowthRate] = useState(3); // 年利%
 
   const daysLeft = (lifeExpectancy - age) * 365;
 
@@ -26,18 +27,22 @@ export default function LifeCountdownDemo() {
 
   for (let year = age; year <= lifeExpectancy; year++) {
     if (year <= retireAge) {
-      // 退職までは収入−支出で増える
+      // 退職までは収入−支出
       currentAssets += (income - expenses) * 12;
     } else {
-      // 退職後は寿命までに0になるよう取り崩す
+      // 退職後は寿命までに0円になるよう取り崩す
       const yearsRemaining = lifeExpectancy - year + 1;
       const annualDrawdown = currentAssets / yearsRemaining;
       currentAssets -= annualDrawdown;
     }
+
+    // 毎年、投資による成長を反映（退職後も含む）
+    currentAssets *= 1 + growthRate / 100;
+
     yearlyData.push({ year, assets: Math.max(currentAssets, 0) });
   }
 
-  // 退職後の1日あたり使える金額（退職時の資産を余命日数で割る）
+  // 退職後の1日あたり使える金額（投資込みで再計算）
   const retireAssets = yearlyData.find(d => d.year === retireAge)?.assets || currentAssets;
   const retireDays = (lifeExpectancy - retireAge) * 365;
   const dailyBudget = retireDays > 0 ? Math.floor(retireAssets / retireDays) : 0;
@@ -104,6 +109,15 @@ export default function LifeCountdownDemo() {
             onChange={(e) => setExpenses(Number(e.target.value))}
           />
         </div>
+        <div>
+          <label className="block text-sm mb-1">年利 (%)</label>
+          <input
+            className="p-2 rounded text-black w-full"
+            type="number"
+            value={growthRate}
+            onChange={(e) => setGrowthRate(Number(e.target.value))}
+          />
+        </div>
       </div>
 
       {/* カード表示 */}
@@ -114,7 +128,7 @@ export default function LifeCountdownDemo() {
         >
           <Hourglass size={48} className="mb-2" />
           <p className="text-3xl font-bold">{daysLeft.toLocaleString()}</p>
-          <p className="text-lg">日 残り</p>
+          <p className="text-lg">残り寿命（日）</p>
         </motion.div>
 
         <motion.div
@@ -133,7 +147,10 @@ export default function LifeCountdownDemo() {
       <div className="bg-white/30 p-6 rounded-2xl shadow-lg">
         <h2 className="text-xl font-semibold mb-4">資産推移（寿命で0円）</h2>
         <ResponsiveContainer width="100%" height={300}>
-          <LineChart data={yearlyData}>
+          <LineChart
+            data={yearlyData}
+            margin={{ top: 20, right: 20, left: 50, bottom: 20 }}
+          >
             <Line
               type="monotone"
               dataKey="assets"
